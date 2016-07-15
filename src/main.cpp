@@ -4,14 +4,12 @@
 #define BAUD 4800
 #include<util/setbaud.h>
 #include<util/delay.h>
+#include<Uart.hpp>
 void uartSend(const char* str)
 {
 	while(*str)
 	{
-	/* Wait for empty transmit buffer */
-	while ( !( UCSRA & (1<<UDRE)) )
-	;
-	UDR = *str++;
+	Uart::send(*str++);
 	}
 
 }

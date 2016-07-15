@@ -1,5 +1,5 @@
-PRG            = demo
-OBJ            = main.o
+PRG            = LedLamp
+OBJ            = LedLamp.o
 MCU_TARGET     = atmega16a
 OPTIMIZE       = -O2
 
@@ -13,18 +13,23 @@ CC             = avr-gcc
 CXX            = avr-g++
 # Override is only needed by avr-lib build system.
 
-override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS)
-override LDFLAGS       = -Wl,-Map,$(PRG).map
+override CFLAGS          = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -I include
+override CXXFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -I include
+override LDFLAGS         = -Wl,-Map,$(PRG).map
 
+SOURCES=$(wildcard src/*.cpp $(LIBDIR)/*.cpp)
+OBJECTS=$(SOURCES:.cpp=.o)
+HEADERS=$(SOURCES:.cpp=.hpp)
 
 all: $(PRG).elf lst text eeprom
 
-$(PRG).elf: $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-# dependency:
-demo.o: demo.c iocompat.h
+%.o: %.cpp $(HEADERS) Makefile
+	 $(CXX) $(CFLAGS) -c -o $@ $<;
 
+$(PRG).elf: $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(CFLAGS)  $^ $(LDLIBS) -o $@
+     
 clean:
 	rm -rf *.o $(PRG).elf *.eps *.png *.pdf *.bak 
 	rm -rf *.lst *.map $(EXTRA_CLEAN_FILES)

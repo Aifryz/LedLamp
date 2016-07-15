@@ -1,0 +1,7 @@
+#Build artifacts
+*.o
+*.bin
+*.elf
+*.hex
+*_eeprom.*
+
