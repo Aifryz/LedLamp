@@ -5,7 +5,6 @@
 #include<util/setbaud.h>
 #include<util/delay.h>
 #include"../include/Uart.hpp"
-#include"../lib/Uart.hpp"
 void uartSend(const char* str)
 {
 	while(*str)
@@ -25,7 +24,6 @@ ISR(USART_RXC_vect)
 }
 int main(void)
 {
-	ahcl::uart::configure<ahcl::uart::no_parity>();
     DDRC |=(1<<PINC0);
 	//uart init
 	//ubbrr = 64
