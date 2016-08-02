@@ -33,7 +33,8 @@ $(PRG).elf: $(OBJECTS)
 clean:
 	rm -rf *.o $(PRG).elf *.eps *.png *.pdf *.bak 
 	rm -rf *.lst *.map $(EXTRA_CLEAN_FILES)
-
+	rm -rf $(OBJECTS)
+	rm -rf *.bin *.hex *.srec
 lst:  $(PRG).lst
 
 %.lst: %.elf
