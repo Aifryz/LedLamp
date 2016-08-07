@@ -16,9 +16,10 @@ namespace twi
 	
 	enum Status
 	{
-		STOPPED,
-		RUNNING,
-		ERROR
+		STOPPED,//No transaction going on, bus is released
+		PAUSED, //No transaction going on, bus is held low(happends when the transaction was setup not to generate stop condition)
+		RUNNING,//Engine is working, there are still bytes to send/receive
+		ERROR   //Error happened when processing transaction, more info is inside the TWSR
 	};
 	namespace priv
 	{
@@ -118,15 +119,19 @@ ISR(TWI_vect)
 			break;
 
 		case State::SLA_W_TXED_NACK:
+			//send stop
 			twi::error();//No such device->cant recover
 			break;
 
 		case State::DATA_TXED_ACK:
 			if(next_byte>=current_transaction.length)//last byte was sent
 			{
-				//if flagstop=stop
-				TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
-				current_transaction_status=twi::STOPPED;
+				if(current_transaction.send_stop_flag==1)
+				{
+					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
+					current_transaction_status=twi::STOPPED;
+				}
+				current_transaction_status=twi::PAUSED;
 			}
 			else
 			{
@@ -143,11 +148,32 @@ ISR(TWI_vect)
 
 		//-----RX-----
 		case State::SLA_R_TXED_ACK:
+			//clear flags and prepare for firt received byte
+			TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+			next_byte++;
 			break;
 		case State::SLA_R_TXED_NACK:
-			twi::error();
+			twi::error();//so such device->cant recover
 			break;
 		case State::DATA_RXED_ACK:
+			/*
+			 * this rx is bad
+			 */
+			if(next_byte>=current_transaction.length)
+			{
+				if(current_transaction.send_stop_flag==1)
+				{
+					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
+					current_transaction_status=twi::STOPPED;
+				}
+					current_transaction_status=twi::PAUSED;
+
+			}
+			else
+			{
+				current_transaction.data[next_byte] = TWDR;
+				next_byte++;
+			}
 			break;
 		case State::DATA_RXED_NACK:
 			twi::error();//same as with tx
@@ -158,7 +184,6 @@ ISR(TWI_vect)
 			//todo rx, cleanup
 
 	}
-		//state machine that uses TWSR
 }
 #endif
 #endif
