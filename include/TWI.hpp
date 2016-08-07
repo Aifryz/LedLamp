@@ -9,6 +9,13 @@ namespace twi
 	//[SLA+R/W][DATA0][DATA1]...[DATAlength-2]
 	struct Transaction
 	{
+		volatile Transaction& operator=(const Transaction& other) volatile
+		{
+			data=other.data;
+			length=other.length;
+			send_stop_flag=other.send_stop_flag;
+			return *this;
+		}
 		uint8_t* data;
 		uint8_t length:7;
 		uint8_t send_stop_flag:1;
@@ -23,9 +30,9 @@ namespace twi
 	};
 	namespace priv
 	{
-		Transaction current_transaction;
-		Status current_transaction_status;
-		uint8_t next_byte;
+		volatile Transaction current_transaction;
+		volatile Status current_transaction_status;
+	   	volatile uint8_t next_byte;
 	}
 	enum State: uint8_t
 	{
@@ -69,6 +76,7 @@ namespace twi
 	//Starts engine
 	inline void startAsyncTransaction(Transaction transaction)
 	{
+		//This line will emit warning that no volatile object will be accesed, this is normal and expected
 		priv::current_transaction = transaction;
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;

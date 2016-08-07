@@ -3,7 +3,7 @@
 #include<avr/interrupt.h>
 #include<util/delay.h>
 #include"../include/Uart.hpp"
-
+#include"../include/TWI.hpp"
 ISR(USART_RXC_vect)
 {
 //simple echo
@@ -14,6 +14,12 @@ ISR(USART_RXC_vect)
 }
 int main(void)
 {
+	uint8_t buf[8];
+	twi::Transaction trans;
+	trans.length = 8;
+	trans.data=buf;
+	trans.send_stop_flag=1;
+	twi::startAsyncTransaction(trans);
     DDRC |=(1<<PINC0);
 	sei();
 	Uart::configure();
