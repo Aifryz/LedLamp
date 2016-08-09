@@ -2,6 +2,7 @@
 #define TWI_HPP
 #include<stdint.h>
 #include<avr/io.h>
+#include"Uart.hpp"
 //This file contains implementation of master transmiter/reciever engines
 namespace twi
 {
@@ -13,11 +14,13 @@ namespace twi
 		{
 			data=other.data;
 			length=other.length;
+			stop_on_nack=other.stop_on_nack;
 			send_stop_flag=other.send_stop_flag;
 			return *this;
 		}
 		uint8_t* data;
-		uint8_t length:7;
+		uint8_t length:6;
+		uint8_t stop_on_nack:1;//If nack was received after data byte, the engine instead of calling twi::error() will generate stop condition and call normal callback.
 		uint8_t send_stop_flag:1;
 	};
 	
@@ -81,6 +84,7 @@ namespace twi
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;
 		sei();
+		TWBR = 0xFF;//DEBUG slow down twi for now
 		//Send start
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)|(1<<TWIE);
 
@@ -102,8 +106,12 @@ namespace twi
 
 ISR(TWI_vect)
 {
+	Uart::send("isr\n");
 	using twi::State;
 	using namespace twi::priv;
+	Uart::send("TWSR is: ");
+	Uart::send(TWSR);
+	Uart::send("stop\n");
 	switch(TWSR)
 	{
 		case State::START_TXED:
@@ -115,7 +123,9 @@ ISR(TWI_vect)
 			break;
 
 		case State::ARB_LOST:
+				TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 				twi::error();
+				
 			break;
 
 		//-----TX-----
@@ -128,6 +138,7 @@ ISR(TWI_vect)
 
 		case State::SLA_W_TXED_NACK:
 			//send stop
+			TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 			twi::error();//No such device->cant recover
 			break;
 
@@ -139,7 +150,8 @@ ISR(TWI_vect)
 					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
 					current_transaction_status=twi::STOPPED;
 				}
-				current_transaction_status=twi::PAUSED;
+				else
+					current_transaction_status=twi::PAUSED;
 			}
 			else
 			{
@@ -151,7 +163,15 @@ ISR(TWI_vect)
 			break;
 
 		case State::DATA_TXED_NACK:
-			twi::error();//if len=0 possibly no err
+			if(current_transaction.stop_on_nack==1)
+			{
+				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+			}
+			else
+			{
+				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+				twi::error();
+			}
 			break;
 
 		//-----RX-----
@@ -160,33 +180,46 @@ ISR(TWI_vect)
 			TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
 			next_byte++;
 			break;
+
 		case State::SLA_R_TXED_NACK:
+			TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 			twi::error();//so such device->cant recover
 			break;
+
 		case State::DATA_RXED_ACK:
-			/*
-			 * this rx is bad
-			 */
-			if(next_byte>=current_transaction.length)
+			current_transaction.data[next_byte]=TWDR;
+			next_byte++;
+			if(next_byte>current_transaction.length)
 			{
 				if(current_transaction.send_stop_flag==1)
 				{
 					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
 					current_transaction_status=twi::STOPPED;
 				}
+				else
+				{
 					current_transaction_status=twi::PAUSED;
+				}
+			}		
+			else
+			{//prepare to rx another byte
+				TWCR|=(1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+			}
+			break;
 
+		case State::DATA_RXED_NACK:
+			if(current_transaction.stop_on_nack==1)
+			{
+				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 			}
 			else
 			{
-				current_transaction.data[next_byte] = TWDR;
-				next_byte++;
+				TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+				twi::error();
 			}
 			break;
-		case State::DATA_RXED_NACK:
-			twi::error();//same as with tx
-			break;
 		default:
+			TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 			twi::error();
 			break;
 			//todo rx, cleanup

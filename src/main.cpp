@@ -15,18 +15,26 @@ ISR(USART_RXC_vect)
 int main(void)
 {
 	uint8_t buf[8];
+	buf[0]=0x80;//write
+	buf[1]=0x00;//mode1 register
+	buf[2]=0b00100001;
+	buf[3]=0b00011011;
 	twi::Transaction trans;
-	trans.length = 8;
+	trans.length = 4;
 	trans.data=buf;
 	trans.send_stop_flag=1;
-	twi::startAsyncTransaction(trans);
-    DDRC |=(1<<PINC0);
+	DDRC |=(1<<PINC0);
 	sei();
 	Uart::configure();
-    while (1) 
+	Uart::send("Starting async \n");
+	_delay_ms(100);
+	twi::startAsyncTransaction(trans);
+	sei();
+	while (1) 
     {
-		Uart::send("uarcik dziala+++\n");
+		Uart::send("lop\n");
 		_delay_ms(100);
+		sei();
     }
 }
 

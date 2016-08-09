@@ -29,9 +29,9 @@ namespace Uart
 	{
 		//Wait for UDRE = 1(tx register empty)
 		asm volatile(
-				"UartUDREWait:	   	  \n\t"
+				"UartUDREWait_%=:	   	  \n\t"
 				"sbis %[reg], %[bit]  \n\t"
-				"rjmp UartUDREWait       "
+				"rjmp UartUDREWait_%=      "
 				://Output
 				://Input
 				[reg] "I" (_SFR_IO_ADDR(UCSRA)),
