@@ -24,30 +24,28 @@ namespace Uart
 
 
 	}
+	//Sends hexadecimal representation of number through uart-> 255 will be sent as "FF"
+	//blocks as usual
+	
 	//Blocking send, does not use interrupts
     inline void send(uint8_t data)
 	{
 		//Wait for UDRE = 1(tx register empty)
 		asm volatile(
 				"UartUDREWait_%=:	   	  \n\t"
-				"sbis %[reg], %[bit]  \n\t"
-				"rjmp UartUDREWait_%=      "
+				"sbis %[reg], %[bit]      \n\t"
+				"rjmp UartUDREWait_%=     \n\t"
+				"out %[udrreg], %[data]      \n\t"
 				://Output
 				://Input
 				[reg] "I" (_SFR_IO_ADDR(UCSRA)),
-				[bit] "I" (UDRE)
+				[bit] "I" (UDRE),
+				[data] "r" (data),
+				[udrreg] "I" (_SFR_IO_ADDR(UDR))
 				);
-
-		UDR = data;
-
 	}
-	inline void send(const char* string)
-	{
-		while(char c = *string)
-		{
-			send(c);
-			string++;
-		}
-	}
+	void sendStr(const char* str);
+	void sendAsHex(uint8_t num);	
+	
 }
 #endif

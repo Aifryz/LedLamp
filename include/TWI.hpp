@@ -83,11 +83,10 @@ namespace twi
 		priv::current_transaction = transaction;
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;
-		sei();
 		TWBR = 0xFF;//DEBUG slow down twi for now
+		sei();
 		//Send start
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)|(1<<TWIE);
-
 		//The twi hardware now runs and is controlled by ISR
 	}	
 #ifndef TWI_ENGINE_USE_CALLBACKS
@@ -106,12 +105,10 @@ namespace twi
 
 ISR(TWI_vect)
 {
-	Uart::send("isr\n");
 	using twi::State;
 	using namespace twi::priv;
-	Uart::send("TWSR is: ");
-	Uart::send(TWSR);
-	Uart::send("stop\n");
+	Uart::sendStr("TWSR is: ");
+	Uart::sendAsHex(TWSR);
 	switch(TWSR)
 	{
 		case State::START_TXED:
@@ -130,16 +127,15 @@ ISR(TWI_vect)
 
 		//-----TX-----
 		case State::SLA_W_TXED_ACK:
+			//Load byte to transmit
 			TWDR = current_transaction.data[next_byte];
 			next_byte++;
-			//Clear TWINT and TWSTA
 			TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
 			break;
 
-		case State::SLA_W_TXED_NACK:
-			//send stop
+		case State::SLA_W_TXED_NACK://No such device->cant recover
 			TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-			twi::error();//No such device->cant recover
+			twi::error();
 			break;
 
 		case State::DATA_TXED_ACK:
@@ -149,9 +145,11 @@ ISR(TWI_vect)
 				{
 					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
 					current_transaction_status=twi::STOPPED;
+					//callback
 				}
 				else
 					current_transaction_status=twi::PAUSED;
+				//callback
 			}
 			else
 			{
@@ -166,6 +164,7 @@ ISR(TWI_vect)
 			if(current_transaction.stop_on_nack==1)
 			{
 				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+				//callback
 			}
 			else
 			{
@@ -174,7 +173,7 @@ ISR(TWI_vect)
 			}
 			break;
 
-		//-----RX-----
+			//-----RX-----
 		case State::SLA_R_TXED_ACK:
 			//clear flags and prepare for firt received byte
 			TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
@@ -183,7 +182,7 @@ ISR(TWI_vect)
 
 		case State::SLA_R_TXED_NACK:
 			TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-			twi::error();//so such device->cant recover
+			twi::error();//no such device->cant recover
 			break;
 
 		case State::DATA_RXED_ACK:
