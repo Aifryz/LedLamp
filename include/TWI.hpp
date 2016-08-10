@@ -184,24 +184,7 @@ ISR(TWI_vect)
 			//-----RX-----
 		case State::SLA_R_TXED_ACK:
 			//clear flags and prepare for firt received byte
-			next_byte++;
-			if(next_byte> current_transaction.length)
-				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
-			else
-			{
-				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);//bytes to rx, send ack
-			}
-			break;
-
-		case State::SLA_R_TXED_NACK:
-			TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-			twi::error();//no such device->cant recover
-			break;
-
-		case State::DATA_RXED_ACK:
-			current_transaction.data[next_byte]=TWDR;
-			next_byte++;
-			if(next_byte>current_transaction.length)
+			if(next_byte>= current_transaction.length)//RX transmission with len=1
 			{
 				if(current_transaction.send_stop_flag==1)
 				{
@@ -213,29 +196,50 @@ ISR(TWI_vect)
 					current_transaction_status=twi::PAUSED;
 				}
 				twi::callback();
-			}		
+			}
 			else
-			{//prepare to rx another byte
-				if(next_byte==current_transaction.length-1)
-				{//read and nack
-					TWCR =(1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+			{
+				if(next_byte+1>=current_transaction.length)//RX transmission with len=2(addr+1read)
+				{
+					TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);//RX without ack
 				}
 				else
-					TWCR =(1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);
+				{
+					TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);//RX with ack
+				}
+			}
+			break;
+
+		case State::SLA_R_TXED_NACK:
+			TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+			twi::error();//no such device->cant recover
+			break;
+
+		case State::DATA_RXED_ACK:
+			current_transaction.data[next_byte]=TWDR;
+			next_byte++;
+			if(next_byte+1>=current_transaction.length)//one byte left
+			{
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);//RX without ack
+			}
+			else
+			{
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);//RX with ack
 			}
 			break;
 
 		case State::DATA_RXED_NACK:
-			if(current_transaction.stop_on_nack==1||1==1)
+			current_transaction.data[next_byte]=TWDR;
+			if(current_transaction.send_stop_flag==1)
 			{
-				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-				twi::callback();
+				TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
+				current_transaction_status=twi::STOPPED;
 			}
 			else
 			{
-				TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-				twi::error();
+				current_transaction_status=twi::PAUSED;
 			}
+			twi::callback();
 			break;
 		default:
 			TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);

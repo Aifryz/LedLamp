@@ -52,9 +52,9 @@ int main(void)
 	buf[3]=0b00011011;
 
 	buf[4]=0x81;//read
-	buf[5]=0xAA;
-	buf[6]=0xAA;
-	buf[7]=0xAA;
+	buf[5]=0xBB;
+	buf[6]=0xBB;
+	buf[7]=0xBB;
 
 	twi::Transaction trans;
 	trans.length = 4;
