@@ -44,7 +44,7 @@ namespace Uart
 				[udrreg] "I" (_SFR_IO_ADDR(UDR))
 				);
 	}
-	void sendStr(const char* str);
+	void send(const char* str);
 	void sendAsHex(uint8_t num);	
 	
 }

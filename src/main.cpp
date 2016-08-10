@@ -26,17 +26,10 @@ int main(void)
 	DDRC |=(1<<PINC0);
 	sei();
 	Uart::configure();
-	Uart::sendStr("Starting async \n");
-	_delay_ms(100);
 	twi::startAsyncTransaction(trans);
 	sei();
-	uint8_t counter = 0;
 	while (1) 
     {
-		Uart::sendAsHex(0xFF);
-		Uart::sendAsHex(counter++);
-		Uart::sendStr("lop\n");
-		_delay_ms(100);
 		sei();
     }
 }

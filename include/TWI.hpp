@@ -92,7 +92,7 @@ namespace twi
 #ifndef TWI_ENGINE_USE_CALLBACKS
 	typedef void(*Callback)();
 	volatile Callback error_callback;
-	volatile Callback stoped_callback;
+	volatile Callback stopped_callback;
 #endif
 	inline void error()
 	{
@@ -101,13 +101,20 @@ namespace twi
 		error_callback();
 #endif
 	}
+	inline void callback()
+	{
+#ifndef TWI_ENGINE_USE_CALLBACKS
+	if(stopped_callback != nullptr)
+		stopped_callback();
+#endif
+	}
 }
 
 ISR(TWI_vect)
 {
 	using twi::State;
 	using namespace twi::priv;
-	Uart::sendStr("TWSR is: ");
+	Uart::send("TWSR is: ");
 	Uart::sendAsHex(TWSR);
 	switch(TWSR)
 	{
@@ -145,11 +152,10 @@ ISR(TWI_vect)
 				{
 					TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);//Send stop
 					current_transaction_status=twi::STOPPED;
-					//callback
 				}
 				else
 					current_transaction_status=twi::PAUSED;
-				//callback
+				twi::callback();
 			}
 			else
 			{
@@ -164,7 +170,7 @@ ISR(TWI_vect)
 			if(current_transaction.stop_on_nack==1)
 			{
 				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
-				//callback
+				twi::callback();
 			}
 			else
 			{
@@ -199,6 +205,7 @@ ISR(TWI_vect)
 				{
 					current_transaction_status=twi::PAUSED;
 				}
+				twi::callback();
 			}		
 			else
 			{//prepare to rx another byte
@@ -210,6 +217,7 @@ ISR(TWI_vect)
 			if(current_transaction.stop_on_nack==1)
 			{
 				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
+				twi::callback();
 			}
 			else
 			{
