@@ -84,9 +84,9 @@ namespace twi
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;
 		TWBR = 0xFF;//DEBUG slow down twi for now
-		sei();
 		//Send start
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)|(1<<TWIE);
+		sei();
 		//The twi hardware now runs and is controlled by ISR
 	}	
 #ifndef TWI_ENGINE_USE_CALLBACKS
@@ -97,6 +97,7 @@ namespace twi
 	inline void error()
 	{
 #ifndef TWI_ENGINE_USE_CALLBACKS
+	Uart::send("err\n");
 	if(error_callback != nullptr)
 		error_callback();
 #endif
@@ -116,6 +117,7 @@ ISR(TWI_vect)
 	using namespace twi::priv;
 	Uart::send("TWSR is: ");
 	Uart::sendAsHex(TWSR);
+	Uart::send('\n');
 	switch(TWSR)
 	{
 		case State::START_TXED:
@@ -182,8 +184,13 @@ ISR(TWI_vect)
 			//-----RX-----
 		case State::SLA_R_TXED_ACK:
 			//clear flags and prepare for firt received byte
-			TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
 			next_byte++;
+			if(next_byte> current_transaction.length)
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+			else
+			{
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);//bytes to rx, send ack
+			}
 			break;
 
 		case State::SLA_R_TXED_NACK:
@@ -209,12 +216,17 @@ ISR(TWI_vect)
 			}		
 			else
 			{//prepare to rx another byte
-				TWCR|=(1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+				if(next_byte==current_transaction.length-1)
+				{//read and nack
+					TWCR =(1<<TWINT)|(1<<TWEN)|(1<<TWIE);
+				}
+				else
+					TWCR =(1<<TWINT)|(1<<TWEN)|(1<<TWIE)|(1<<TWEA);
 			}
 			break;
 
 		case State::DATA_RXED_NACK:
-			if(current_transaction.stop_on_nack==1)
+			if(current_transaction.stop_on_nack==1||1==1)
 			{
 				TWCR =  (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)|(1<<TWIE);
 				twi::callback();

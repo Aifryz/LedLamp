@@ -7,12 +7,12 @@ namespace Uart
 		uint8_t high = (num&0xf0)>>4;
 
 		if(low>9)
-			low+='A';
+			low+='A'-10;
 		else
 			low+='0';
 
 		if(high>9)
-			high+='A';
+			high+='A'-10;
 		else
 			high+='0';
 
