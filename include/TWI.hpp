@@ -2,7 +2,7 @@
 #define TWI_HPP
 #include<stdint.h>
 #include<avr/io.h>
-#include"Uart.hpp"
+#include"Debug.hpp"
 //This file contains implementation of master transmiter/reciever engines
 namespace twi
 {
@@ -36,6 +36,7 @@ namespace twi
 		volatile Transaction current_transaction;
 		volatile Status current_transaction_status;
 	   	volatile uint8_t next_byte;
+		const bool DEBUG_TWI=false;
 	}
 	enum State: uint8_t
 	{
@@ -62,6 +63,7 @@ namespace twi
 	Status doTransaction(Transaction t)
 	{
 		return ERROR;
+		Debug::print("Blocking i2c not implemented\n", priv::DEBUG_TWI);
 	}	
 }
 
@@ -97,7 +99,7 @@ namespace twi
 	inline void error()
 	{
 #ifndef TWI_ENGINE_USE_CALLBACKS
-	Uart::send("err\n");
+	Debug::print("TWI error\n", priv::DEBUG_TWI);
 	if(error_callback != nullptr)
 		error_callback();
 #endif
@@ -115,9 +117,9 @@ ISR(TWI_vect)
 {
 	using twi::State;
 	using namespace twi::priv;
-	Uart::send("TWSR is: ");
-	Uart::sendAsHex(TWSR);
-	Uart::send('\n');
+	Debug::print("TWSR is: ", DEBUG_TWI);
+	Debug::print_hex(TWSR, DEBUG_TWI);
+	Debug::print("\n", DEBUG_TWI);
 	switch(TWSR)
 	{
 		case State::START_TXED:
