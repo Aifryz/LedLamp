@@ -4,6 +4,7 @@
 #include<util/delay.h>
 #include"../include/Uart.hpp"
 #include"../include/TWI.hpp"
+#include"../include/Random.hpp"
 ISR(USART_RXC_vect)
 {
 //simple echo
@@ -65,6 +66,7 @@ int main(void)
 	Uart::send("Hello\n");
 	twi::stopped_callback = &call;
 	twi::startAsyncTransaction(trans);
+	Random::seedWithADC();
 	while (1) 
     {
 		sei();
