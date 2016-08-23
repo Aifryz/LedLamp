@@ -14,7 +14,7 @@ CXX            = avr-g++
 # Override is only needed by avr-lib build system.
 
 override CFLAGS          = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -I include
-override CXXFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -I include
+override CXXFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -std=c++11 -I include
 override LDFLAGS         = -Wl,-Map,$(PRG).map
 
 SOURCES=$(wildcard src/*.cpp $(LIBDIR)/*.cpp)
