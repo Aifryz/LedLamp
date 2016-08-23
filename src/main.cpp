@@ -64,9 +64,9 @@ int main(void)
 	DDRC |=(1<<PINC0);
 	Uart::configure();
 	Uart::send("Hello\n");
+	Random::seedWithADC();
 	twi::stopped_callback = &call;
 	twi::startAsyncTransaction(trans);
-	Random::seedWithADC();
 	while (1) 
     {
 		sei();

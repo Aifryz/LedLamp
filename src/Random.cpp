@@ -33,9 +33,10 @@ namespace Random
 		 */		
 		ADMUX = (1<<REFS1)|(1<<REFS0)|(1<<MUX0)|(1<<MUX1)|(1<<MUX2);
 		//Fastest clock->most noise(i hope)
-		ADCSRA = (1<<ADEN)|(1<<ADSC);
+		ADCSRA = (1<<ADEN);
 		for(uint8_t i=0;i<16;i++)
 		{
+			ADCSRA |= (1<<ADSC);
 			//Wait for complete conversion
 			asm volatile(
 					"AdcADSCWait_%=:	   	  \n\t"
@@ -50,7 +51,7 @@ namespace Random
 			//Read high register 
 			volatile uint8_t high = ADCH;
 			state |= (low & 0x01)<<i;
-			Debug::print("Low is:",priv::DEBUG_ADC);
+			Debug::print("\nLow is:",priv::DEBUG_ADC);
 			Debug::print_hex(low,priv::DEBUG_ADC);
 		}
 		Debug::print("\n Seed is: ", priv::DEBUG_ADC);
