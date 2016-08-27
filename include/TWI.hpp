@@ -24,7 +24,7 @@ namespace twi
 		uint8_t send_stop_flag:1;
 	};
 	
-	enum Status
+	enum Status: uint8_t
 	{
 		STOPPED,//No transaction going on, bus is released
 		PAUSED, //No transaction going on, bus is held low(happends when the transaction was setup not to generate stop condition)
@@ -79,9 +79,14 @@ namespace twi
 		return priv::current_transaction_status;
 	}
 	//Starts engine
+	//If there's pending transaction then this function will wait untill the pending transaction is completed
 	inline void startAsyncTransaction(Transaction transaction)
 	{
-		//This line will emit warning that no volatile object will be accesed, this is normal and expected
+		while(priv::current_transaction_status == RUNNING)
+		{
+			//wait
+		}
+		//This line will emit warning that no volatile object will be accesed, this is normal and expected	
 		priv::current_transaction = transaction;
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;
