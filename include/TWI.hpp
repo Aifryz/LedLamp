@@ -33,10 +33,10 @@ namespace twi
 	};
 	namespace priv
 	{
-		volatile Transaction current_transaction;
-		volatile Status current_transaction_status;
-	   	volatile uint8_t next_byte;
-		const bool DEBUG_TWI=false;
+		extern volatile Transaction current_transaction;
+		extern volatile Status current_transaction_status;
+	   	extern volatile uint8_t next_byte;
+		const bool DEBUG_TWI=true ;
 	}
 	enum State: uint8_t
 	{
@@ -98,8 +98,8 @@ namespace twi
 	}	
 #ifndef TWI_ENGINE_USE_CALLBACKS
 	typedef void(*Callback)();
-	volatile Callback error_callback;
-	volatile Callback stopped_callback;
+	extern volatile Callback error_callback;
+	extern volatile Callback stopped_callback;
 #endif
 	inline void error()
 	{

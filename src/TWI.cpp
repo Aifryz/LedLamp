@@ -1,4 +1,16 @@
 #include"../include/TWI.hpp"
+namespace twi
+{
+	namespace priv
+	{
+		volatile Transaction current_transaction;
+		volatile Status current_transaction_status;
+	   	volatile uint8_t next_byte;
+	}
+	volatile Callback error_callback;
+	volatile Callback stopped_callback;
+
+}
 ISR(TWI_vect)
 {
 	using twi::State;

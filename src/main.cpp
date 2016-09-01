@@ -5,6 +5,7 @@
 #include"../include/Uart.hpp"
 #include"../include/TWI.hpp"
 #include"../include/Random.hpp"
+#include"../include/LedController.hpp"
 ISR(USART_RXC_vect)
 {
 //simple echo
@@ -13,60 +14,16 @@ ISR(USART_RXC_vect)
     PORTC^=(1<<PINC0);
 	//reti();
 }
-uint8_t buf[8];
-
-	static volatile uint8_t counter=0;
-void call()
-{
-	Uart::send("callback\n");
-	for(uint8_t i=0;i<8;i++)
-		Uart::sendAsHex(buf[i]);
-	Uart::send('\n');
-	counter++;
-	if(counter==2)
-	{
-		Uart::sendAsHex(twi::priv::current_transaction.data[0]);
-		Uart::sendAsHex(twi::priv::current_transaction.data[1]);
-		Uart::sendAsHex(twi::priv::current_transaction.data[2]);
-		Uart::sendAsHex(twi::priv::current_transaction.data[3]);
-	}
-	else if(counter==1)
-	{
-		twi::Transaction tr;
-		tr.data= buf+4;
-		tr.send_stop_flag=1;
-		tr.length=4;
-		twi::startAsyncTransaction(tr);
-	}
-	else
-	{
-		Uart::send("Bad call\n");
-	}
-	return;
-}
 
 int main(void)
 {
-	buf[0]=0x80;//write
-	buf[1]=0x00;//mode1 register
-	buf[2]=0b00100001;
-	buf[3]=0b00011011;
-
-	buf[4]=0x81;//read
-	buf[5]=0xBB;
-	buf[6]=0xBB;
-	buf[7]=0xBB;
-
-	twi::Transaction trans;
-	trans.length = 4;
-	trans.data=buf;
-	trans.send_stop_flag=0;
 	DDRC |=(1<<PINC0);
 	Uart::configure();
 	Uart::send("Hello\n");
 	Random::seedWithADC();
-	twi::stopped_callback = &call;
-	twi::startAsyncTransaction(trans);
+	Led::initDrivers();
+	Led::update();
+
 	while (1) 
     {
 		sei();

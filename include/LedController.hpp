@@ -12,19 +12,24 @@ namespace Led
 	   	uint8_t	time;//How long since the start of current profile
 	};
 	const uint8_t LED_COUNT=32;
-	//Structure that takes the led states, calculates the current brightness and updates registers on the drivers  
-	struct Controller
-	{
-		Controller(State* states);
-		void initDrivers();
-		void update();
+	//namespace that stores the led states, calculates the current brightness and updates registers on the drivers  
+	void initDrivers();
+	void update();
 
-		private:
-		State* m_states;
-	};
 	namespace priv
 	{
+		extern twi::Transaction transaction;
+		extern uint8_t buf1[8];
+		extern uint8_t buf2[8];
+		extern uint8_t* buf;
+		extern State states[32];
 		void TwiCallback();
+		inline void swapBuffers()
+		{
+			uint8_t* tmp = transaction.data;
+			transaction.data = buf;
+			buf = tmp;	
+		}
 	}
 }
 #endif

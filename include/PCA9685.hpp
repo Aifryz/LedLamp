@@ -1,6 +1,6 @@
 #ifndef PCA9685_HPP
 #define PCA9685_HPP
-#include<cstdint>
+#include<stdint.h>
 namespace PCA9685
 {
 	enum Registers: uint8_t
