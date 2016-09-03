@@ -36,7 +36,7 @@ namespace twi
 		extern volatile Transaction current_transaction;
 		extern volatile Status current_transaction_status;
 	   	extern volatile uint8_t next_byte;
-		const bool DEBUG_TWI=true ;
+		const bool DEBUG_TWI=false;
 	}
 	enum State: uint8_t
 	{
