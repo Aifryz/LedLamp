@@ -83,6 +83,8 @@ namespace PCA9685
 	// do not use TestMode      = 0xFF  //read/write defines the test mode to be entered
 
 	};
+	//First LED register
+	const uint8_t LED_START = 0x06;
 	// "*" means default value
 	enum MODE1: uint8_t
 	{
