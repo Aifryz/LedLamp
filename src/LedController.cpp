@@ -45,6 +45,12 @@ namespace Led
 		//Calculates brightness of current led(states[led_counter]) and stores it inside the buf[2:5]
 		void calculateBrightness()
 		{
+			State current = states[led_counter];	
+			if(current.time == 0)
+			{//init
+
+			}
+
 			priv::buf[2]=0x00;
 			priv::buf[3]=0x00;
 			priv::buf[4]=led_counter*8;

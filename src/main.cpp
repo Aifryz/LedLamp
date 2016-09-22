@@ -6,6 +6,7 @@
 #include"../include/TWI.hpp"
 #include"../include/Random.hpp"
 #include"../include/LedController.hpp"
+#include"../include/StateMachine.hpp"
 ISR(USART_RXC_vect)
 {
 //simple echo
@@ -22,10 +23,12 @@ int main(void)
 	Uart::send("Hello\n");
 	Random::seedWithADC();
 	Led::initDrivers();
-	Led::update();
-
+	StateMachine m;
+	m.update();
 	while (1) 
     {
+		Led::update();
+		_delay_ms(20);
 		sei();
     }
 }
