@@ -9,5 +9,4 @@ struct StateMachine
 	private:
 
 };
-static StateMachine state;
 #endif

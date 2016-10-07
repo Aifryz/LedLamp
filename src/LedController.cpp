@@ -1,6 +1,9 @@
 #include"../include/LedController.hpp"
+#include"../include/Profiles.hpp"
+#include"../include/Debug.hpp"
 namespace Led
 {
+	const bool DEBUG=false;
 	void initDrivers()
 	{
 		priv::buf[0]=0x80;//SLA+W
@@ -40,21 +43,21 @@ namespace Led
 		uint8_t buf2[8];
 		uint8_t* buf=buf1;
 		State states[32];
-		uint8_t led_counter=0;
-
+		uint8_t led_counter;
 		//Calculates brightness of current led(states[led_counter]) and stores it inside the buf[2:5]
 		void calculateBrightness()
 		{
 			State current = states[led_counter];	
-			if(current.time == 0)
-			{//init
 
-			}
-
+			uint16_t brightness = pgm_read_word(&getProfileLocation(current.profile)[current.brightness_pos]);
+			uint8_t time = (brightness&0xF000)>>12;
+			Debug::print("bproc time: ", DEBUG);
+			Debug::print_hex(time, DEBUG);
+			Debug::print("\n", DEBUG);
 			priv::buf[2]=0x00;
 			priv::buf[3]=0x00;
-			priv::buf[4]=led_counter*8;
-			priv::buf[5]=0x00;
+			priv::buf[4]=brightness&(0x00FF);
+			priv::buf[5]=(brightness&(0x0F00))>>8;
 		}
 
 		void TwiCallback()

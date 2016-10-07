@@ -1,4 +1,5 @@
 #include"Uart.hpp"
+#pragma once
 namespace Debug
 {
 //Simple disableable  wrappers over Uart::Print

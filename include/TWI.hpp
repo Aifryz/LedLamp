@@ -90,7 +90,7 @@ namespace twi
 		priv::current_transaction = transaction;
 		priv::current_transaction_status=RUNNING;
 		priv::next_byte=0;
-		TWBR = 0xFF;//DEBUG slow down twi for now
+		//TWBR = 0xFF;//DEBUG slow down twi for now
 		//Send start
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN)|(1<<TWIE);
 		sei();

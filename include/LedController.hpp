@@ -6,9 +6,9 @@ namespace Led
 {
 	struct State
 	{
-		uint8_t mode_pos;//Which profile is currently played
+		uint8_t profile;//Which profile is currently played
 		uint8_t repeat_pos;//Which repeat of this profile is played
-		uint8_t profile_pos;//Which brightness level is currently being reached
+		uint8_t brightness_pos;//Which brightness level is currently being reached
 	   	uint8_t	time;//How long since the start of current profile
 		//Bresenham algorithm variables
 		uint16_t D;

@@ -27,8 +27,8 @@ int main(void)
 	m.update();
 	while (1) 
     {
-		Led::update();
-		_delay_ms(20);
+		m.update();
+		_delay_ms(10);
 		sei();
     }
 }
