@@ -5,7 +5,7 @@ namespace Random
 	static uint16_t state;
 	namespace priv
 	{
-		bool DEBUG_ADC = true;
+		bool DEBUG_ADC = false;
 	}
 	uint8_t getByte()
 	{
