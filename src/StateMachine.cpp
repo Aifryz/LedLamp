@@ -11,7 +11,6 @@
 void StateMachine::update()
 {
 	
-	const bool DEBUG=true;
 	/*
 	 *	handle inputs(change mode)
 	 *	update profiles
@@ -31,9 +30,10 @@ void StateMachine::update()
 		
 		if(st.time > time*16)
 		{
+			if(i==13)Debug::print("tp\n");
 			//load next brightness point
 			st.brightness_pos++;
-
+			st.oldy=brightness&(0x0FFF);
 			brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
 			time = (brightness&0xF000)>>12;
 
@@ -44,10 +44,11 @@ void StateMachine::update()
 		{
 			//for now, loop to first bp
 			st.brightness_pos = 0;
-
+			st.oldy=brightness&(0x0FFF);
 			brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
 			time = (brightness&0xF000)>>12;
-
+			
+			st.time=0;
 			//todo repeats
 			//todo profiles
 		}

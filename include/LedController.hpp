@@ -11,8 +11,10 @@ namespace Led
 		uint8_t brightness_pos;//Which brightness level is currently being reached
 	   	uint8_t	time;//How long since the start of current profile
 		//Bresenham algorithm variables
-		uint16_t D;
-		uint16_t y;
+		int16_t D;
+		int16_t y;
+		int16_t oldy;
+		uint8_t flip:1;
 	};
 	const uint8_t LED_COUNT=32;
 	//namespace that stores the led states, calculates the current brightness and updates registers on the drivers  
