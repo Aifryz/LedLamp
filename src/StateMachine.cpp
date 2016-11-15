@@ -39,13 +39,17 @@ void StateMachine::update()
 
 			st.time = 0;
 		}
-
+		//todo proper looping
 		if(st.brightness_pos >= getProfileSize(st.profile))//end of profile
 		{
-			//for now, loop to first bp
-			st.brightness_pos = 0;
+			brightnes = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos-1]);
 			st.oldy=brightness&(0x0FFF);
-			brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
+
+			//for now, loop to first bp
+			if(i==13)Debug::print("ps\n");
+			st.brightness_pos = 0;
+			//load last point
+						brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
 			time = (brightness&0xF000)>>12;
 			
 			st.time=0;

@@ -84,7 +84,7 @@ namespace Led
 				calculated=2*current.oldy-current.y;	
 			}
 			uint16_t val=calculated;
-			if(led_counter==13)
+			if(led_counter==13 && (current.time == time*16 || current.time==0))
 			{
 				Debug::print("currently out:");
 				Debug::print_hex((val&0xFF00)>>8);
