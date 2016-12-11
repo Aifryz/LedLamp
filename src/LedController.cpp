@@ -57,6 +57,16 @@ namespace Led
 		{
 			cli();
 			State current = states[led_counter];	
+			if(!current.alive)
+			{//not alive->turn off for now, todo mode default brightness
+				priv::buf[2]=0x00;
+				priv::buf[3]=0x00;
+				priv::buf[4]=0x00;
+				priv::buf[5]=0x00;
+				
+				sei();
+				return;
+			}
 			uint16_t brightness = pgm_read_word(&getProfileLocation(current.profile)[current.brightness_pos]);
 			uint8_t time = (brightness&0xF000)>>12;
 			brightness &=(0x0FFF);
@@ -86,11 +96,13 @@ namespace Led
 				calculated=2*current.oldy-current.y;	
 			}
 			uint16_t val=calculated;
-			
-			priv::buf[2]=0x00;
-			priv::buf[3]=0x00;
-			priv::buf[4]=val&0x00FF;
-			priv::buf[5]=(val&0x0F00)>>8;
+			if(current.alive)
+			{	
+				priv::buf[2]=0x00;
+				priv::buf[3]=0x00;
+				priv::buf[4]=val&0x00FF;
+				priv::buf[5]=(val&0x0F00)>>8;
+			}
 			
 			while(current.D>=0)
 			{

@@ -27,11 +27,12 @@ void StateMachine::update()
 		uint8_t time;
 		if(!st.alive)//not alive->chance to spawn
 		{
-			if(Random::getByte() > 240)//small chance to spawn
+			if(Random::getUint16() > 0xFFF0u)//small chance to spawn
 			{
 				st.alive=1;
 				st.profile = 0;
 				st.brightness_pos=0;
+				st.time=0;
 			}	
 			else continue;//still not alive, get next led to update
 		}	

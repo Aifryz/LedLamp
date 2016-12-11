@@ -2,21 +2,35 @@
 #include"../include/Debug.hpp"
 namespace Random
 {
-	static uint16_t state;
+	static uint32_t state;
 	namespace priv
 	{
 		bool DEBUG_ADC = false;
 	}
-	uint8_t getByte()
+	void rotate()
 	{
-		//16 bit maximal period Galois LFSR
+		//32 bit Galois LFSR
 		uint8_t lsb = state & 1;
 		state >>=1;
 		if(lsb)
 		{
-			state^=0xB400;
+			state^=0xA3000000;
 		}
-		return state & 0x00FF;
+	}
+	uint8_t getByte()
+	{
+		rotate();
+		return state & 0xFF;
+	}
+	uint16_t getUint16()
+	{
+		rotate();
+		return state & 0xFFFF;
+	}
+	uint32_t getUint32()
+	{
+		rotate();
+		return state;
 	}
 	//Seeds the LFSR with given seed
 	void seed(uint16_t seed)
@@ -34,7 +48,7 @@ namespace Random
 		ADMUX = (1<<REFS1)|(1<<REFS0)|(1<<MUX0)|(1<<MUX1)|(1<<MUX2);
 		//Fastest clock->most noise(i hope)
 		ADCSRA = (1<<ADEN);
-		for(uint8_t i=0;i<16;i++)
+		for(uint8_t i=0;i<32;i++)
 		{
 			ADCSRA |= (1<<ADSC);
 			//Wait for complete conversion
