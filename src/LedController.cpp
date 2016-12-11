@@ -75,7 +75,7 @@ namespace Led
 				if(led_counter ==13 && current.time==0)
 				{
 					//Debug::print("Init time: ");
-					Debug::print_hex(time);
+				//	Debug::print_hex(time);
 				}
 			}	
 						int16_t calculated=current.y;	
@@ -86,11 +86,11 @@ namespace Led
 			uint16_t val=calculated;
 			if(led_counter==13 && (current.time == time*16 || current.time==0))
 			{
-				Debug::print("currently out:");
-				Debug::print_hex((val&0xFF00)>>8);
-				Debug::print_hex(val&0x00FF);
+				//Debug::print("currently out:");
+				//Debug::print_hex((val&0xFF00)>>8);
+				//Debug::print_hex(val&0x00FF);
 				
-				Debug::print("\n");
+				//Debug::print("\n");
 			}
 			priv::buf[2]=0x00;
 			priv::buf[3]=0x00;
