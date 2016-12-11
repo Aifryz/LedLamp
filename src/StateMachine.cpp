@@ -2,6 +2,7 @@
 #include"../include/LedController.hpp"
 #include"../include/Profiles.hpp"
 #include"../include/Debug.hpp"
+#include"../include/Random.hpp"
 /*
  * 
  *
@@ -24,13 +25,23 @@ void StateMachine::update()
 		st.profile=0;
 		st.time++;
 		uint8_t time;
-		
+		if(!st.alive)//not alive->chance to spawn
+		{
+			if(Random::getByte() > 240)//small chance to spawn
+			{
+				st.alive=1;
+				st.profile = 0;
+				st.brightness_pos=0;
+			}	
+			else continue;//still not alive, get next led to update
+		}	
+
+
 		uint16_t brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
 		time = (brightness&0xF000)>>12;
 		
 		if(st.time > time*16)
 		{
-			if(i==13)Debug::print("tp\n");
 			//load next brightness point
 			st.brightness_pos++;
 			st.oldy=brightness&(0x0FFF);
@@ -42,14 +53,12 @@ void StateMachine::update()
 		//todo proper looping
 		if(st.brightness_pos >= getProfileSize(st.profile))//end of profile
 		{
-			brightnes = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos-1]);
+			brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos-1]);
 			st.oldy=brightness&(0x0FFF);
 
-			//for now, loop to first bp
-			if(i==13)Debug::print("ps\n");
-			st.brightness_pos = 0;
+			st.alive=0;
 			//load last point
-						brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
+			brightness = pgm_read_word(&getProfileLocation(st.profile)[st.brightness_pos]);
 			time = (brightness&0xF000)>>12;
 			
 			st.time=0;

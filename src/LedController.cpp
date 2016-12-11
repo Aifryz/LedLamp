@@ -21,6 +21,13 @@ namespace Led
 		twi::stopped_callback = nullptr;
 		twi::startAsyncTransaction(priv::transaction);
 	}
+	void initStates()
+	{
+		for(State& st: priv::states)
+		{
+			st= {0};//zero initialize everything(methinks)
+		}
+	}
 	namespace priv
 	{
 		void calculateBrightness();
@@ -72,26 +79,14 @@ namespace Led
 				current.y=current.oldy;
 				
 				current.D=dy-dx;
-				if(led_counter ==13 && current.time==0)
-				{
-					//Debug::print("Init time: ");
-					Debug::print_hex(time);
-				}
 			}	
-						int16_t calculated=current.y;	
+			int16_t calculated=current.y;	
 			if(current.flip==1)
 			{
 				calculated=2*current.oldy-current.y;	
 			}
 			uint16_t val=calculated;
-			if(led_counter==13 && (current.time == time*16 || current.time==0))
-			{
-				Debug::print("currently out:");
-				Debug::print_hex((val&0xFF00)>>8);
-				Debug::print_hex(val&0x00FF);
-				
-				Debug::print("\n");
-			}
+			
 			priv::buf[2]=0x00;
 			priv::buf[3]=0x00;
 			priv::buf[4]=val&0x00FF;
@@ -99,7 +94,6 @@ namespace Led
 			
 			while(current.D>=0)
 			{
-					//Debug::print("Init time: ");
 				current.y++;
 				current.D-=dx;
 			}

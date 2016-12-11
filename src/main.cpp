@@ -23,6 +23,7 @@ int main(void)
 	Uart::send("Hello\n");
 	Random::seedWithADC();
 	Led::initDrivers();
+	Led::initStates();
 	StateMachine m;
 	m.update();
 	while (1) 

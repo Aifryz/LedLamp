@@ -15,11 +15,14 @@ namespace Led
 		int16_t y;
 		int16_t oldy;
 		uint8_t flip:1;
+		//Some more state variables
+		uint8_t alive:1;
 	};
 	const uint8_t LED_COUNT=32;
 	//namespace that stores the led states, calculates the current brightness and updates registers on the drivers  
 	void initDrivers();
 	void update();
+	void initStates();
 
 	namespace priv
 	{
