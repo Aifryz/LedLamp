@@ -19,7 +19,7 @@ void StateMachine::update()
 	 *	call update brightness
 	 *
 	 */
-	for(uint8_t i = 0; i<16;i++)
+	for(uint8_t i = 0; i<32;i++)
 	{
 		Led::State st = Led::priv::states[i];
 		st.profile=0;
@@ -33,6 +33,8 @@ void StateMachine::update()
 				st.profile = 0;
 				st.brightness_pos=0;
 				st.time=0;
+				Debug::print("\nspawned led\n");
+				Debug::print_hex(i);
 			}	
 			else continue;//still not alive, get next led to update
 		}	

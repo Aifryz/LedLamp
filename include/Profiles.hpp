@@ -8,9 +8,9 @@ namespace priv
 	}
 	
 
-	const uint16_t profile1[6] PROGMEM=
+	const uint16_t profile1[4] PROGMEM=
 	{
-		helper(0x00FF,4),helper(0x0FFF, 8),helper(0x0000,15),helper(0x000F,1),helper(0x0FF0,2),helper(0x0AAA, 1)
+		helper(0x000F,5),helper(0x0FFF,1),helper(0x000F,1),helper(0x000F, 2)
 	};
 	struct prof
 	{

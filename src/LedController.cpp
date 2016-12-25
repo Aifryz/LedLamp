@@ -20,6 +20,22 @@ namespace Led
 
 		twi::stopped_callback = nullptr;
 		twi::startAsyncTransaction(priv::transaction);
+		while(twi::getEngineStatus() == twi::RUNNING)
+		{}
+		priv::buf[0]=0x82;//SLA+W
+		priv::buf[1]=0x00;//MODE1 register
+		priv::buf[2]=0b00100001;
+		priv::buf[3]=0b00011011;
+	
+		priv::transaction.length = 4;
+		priv::transaction.data = priv::buf;
+		priv::transaction.send_stop_flag=1;
+		//Prepare for the next writes to be written to backbuffer
+		priv::buf = priv::buf2;	
+
+		twi::stopped_callback = nullptr;
+		twi::startAsyncTransaction(priv::transaction);
+
 	}
 	void initStates()
 	{
@@ -61,7 +77,7 @@ namespace Led
 			{//not alive->turn off for now, todo mode default brightness
 				priv::buf[2]=0x00;
 				priv::buf[3]=0x00;
-				priv::buf[4]=0x00;
+				priv::buf[4]=0x0F;
 				priv::buf[5]=0x00;
 				
 				sei();
@@ -118,11 +134,10 @@ namespace Led
 
 		void TwiCallback()
 		{
-			//todo make this function work with two drivers
-			priv::buf[0]=0x80;
-			priv::buf[1]=PCA9685::LED_START+led_counter*4;
+			uint8_t lc= (led_counter>15)? led_counter-16:led_counter;
+			priv::buf[0]=(led_counter <=15)? 0x80:0x82;
+			priv::buf[1]=PCA9685::LED_START+lc*4;
 			priv::transaction.length = 6;
-
 			priv::transaction.data = priv::buf;
 			priv::transaction.send_stop_flag=1;
 
@@ -134,7 +149,7 @@ namespace Led
 			priv::swapBuffers();
 
 			led_counter++;
-			if(led_counter>=16)
+			if(led_counter>=32)
 			{	
 				led_counter=0;
 				twi::stopped_callback=nullptr;

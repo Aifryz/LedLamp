@@ -29,7 +29,7 @@ int main(void)
 	while (1) 
     {
 		m.update();
-		_delay_ms(10);
+		_delay_ms(2);
 		sei();
     }
 }
